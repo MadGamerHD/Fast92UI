@@ -1,7 +1,9 @@
 import os
 import subprocess
+import threading
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+from pathlib import Path
 
 class ConverterApp(ttk.Frame):
     """Modernized GUI application for Fastman92 Processor."""
@@ -40,7 +42,7 @@ class ConverterApp(ttk.Frame):
 
     def create_widgets(self):
         """Construct and place widgets in organized frames."""
-        # Create frames for file selection, conversion options, advanced options, and log output.
+        # Frames for organization.
         file_frame = ttk.LabelFrame(self, text="File Selection", padding="10")
         file_frame.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
 
@@ -82,7 +84,7 @@ class ConverterApp(ttk.Frame):
         ttk.Entry(advanced_frame, textvariable=self.additional_args_var, width=40).grid(row=1, column=1, padx=5, pady=3)
 
         # Run Conversion Button
-        run_button = ttk.Button(self, text="Run Conversion", command=self.run_conversion)
+        run_button = ttk.Button(self, text="Run Conversion", command=self.run_conversion_thread)
         run_button.grid(row=4, column=0, pady=10)
 
         # Log Output Frame
@@ -100,14 +102,14 @@ class ConverterApp(ttk.Frame):
         ttk.Button(parent, text="Browse...", command=browse_command).grid(row=row, column=2, padx=5, pady=3)
 
     def browse_input_file(self):
-        """Browse for an input file and suggest an output file name automatically."""
+        """Browse for an input file and auto-suggest an output file name."""
         file_path = filedialog.askopenfilename(title="Select Input File")
         if file_path:
             self.input_file_var.set(file_path)
-            directory, filename = os.path.split(file_path)
-            base, _ = os.path.splitext(filename)
+            input_path = Path(file_path)
             new_ext = ".ipl" if self.file_type_var.get() == "ipl" else ".ide"
-            self.output_file_var.set(os.path.join(directory, base + new_ext))
+            suggested_output = input_path.with_suffix(new_ext)
+            self.output_file_var.set(str(suggested_output))
 
     def browse_output_file(self):
         """Browse for an output file to save."""
@@ -126,11 +128,11 @@ class ConverterApp(ttk.Frame):
 
     def log(self, message):
         """Append messages to the log output text widget."""
-        self.log_text.insert(tk.END, message + "\n")
+        self.log_text.insert(tk.END, f"{message}\n")
         self.log_text.see(tk.END)
 
-    def run_conversion(self):
-        """Validate inputs, build the command, execute conversion, and log output."""
+    def build_command(self):
+        """Build the command list based on the user input."""
         input_file = self.input_file_var.get().strip()
         output_file = self.output_file_var.get().strip()
         file_type = self.file_type_var.get().strip()
@@ -144,13 +146,10 @@ class ConverterApp(ttk.Frame):
 
         # Validate required fields.
         if not input_file:
-            messagebox.showerror("Error", "Please select an input file.")
-            return
+            raise ValueError("Please select an input file.")
         if not output_file:
-            messagebox.showerror("Error", "Please select an output file.")
-            return
+            raise ValueError("Please select an output file.")
 
-        # Build command list.
         command = [
             "fastman92_processor.exe",
             "/file_type", file_type,
@@ -167,16 +166,28 @@ class ConverterApp(ttk.Frame):
 
         if move_position:
             parts = move_position.split()
-            if len(parts) == 3:
-                command.extend(["/move_position"] + parts)
-            else:
-                messagebox.showerror("Error", "Move Position must contain three values (X Y Z).")
-                return
+            if len(parts) != 3:
+                raise ValueError("Move Position must contain three values (X Y Z).")
+            command.extend(["/move_position"] + parts)
 
         if additional_args:
             command.extend(additional_args.split())
 
-        # Log and run the command.
+        return command
+
+    def run_conversion_thread(self):
+        """Start the conversion in a separate thread to keep the GUI responsive."""
+        thread = threading.Thread(target=self.run_conversion, daemon=True)
+        thread.start()
+
+    def run_conversion(self):
+        """Validate inputs, build the command, execute conversion, and log output."""
+        try:
+            command = self.build_command()
+        except ValueError as ve:
+            messagebox.showerror("Error", str(ve))
+            return
+
         self.log("Running command:")
         self.log(" ".join(command))
         try:
@@ -184,9 +195,13 @@ class ConverterApp(ttk.Frame):
                 command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
             )
             self.log("Process output:\n" + result.stdout)
-            messagebox.showinfo("Success", f"Conversion complete!\nOutput file: {output_file}")
+            messagebox.showinfo("Success", f"Conversion complete!\nOutput file: {self.output_file_var.get()}")
         except subprocess.CalledProcessError as e:
             error_msg = f"An error occurred:\n{e.stderr}"
+            self.log(error_msg)
+            messagebox.showerror("Conversion Error", error_msg)
+        except Exception as e:
+            error_msg = f"Unexpected error: {e}"
             self.log(error_msg)
             messagebox.showerror("Conversion Error", error_msg)
 
