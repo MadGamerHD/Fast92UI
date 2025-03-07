@@ -31,7 +31,7 @@ class ConverterApp(ttk.Frame):
         # Consolidated conversation game option (applies to both input and output)
         self.conversation_game_var = tk.StringVar(value="GAME_EXACT_GTAIV_PC")
         
-        self.file_type_options = ["ipl", "ide"]
+        self.file_type_options = ["ipl", "ide", "wpl", "idb"]
         self.input_type_options = ["binary", "text"]
         self.output_type_options = ["binary", "text"]
         self.game_options = [
