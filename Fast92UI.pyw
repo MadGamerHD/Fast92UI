@@ -331,8 +331,8 @@ class ConverterApp(ttk.Frame):
         total_files = len(self.batch_files)
         for idx, input_file in enumerate(self.batch_files, start=1):
             input_path = Path(input_file)
-            # Generate output file with '_converted' suffix.
-            output_file = str(Path(output_folder) / (input_path.stem + "_converted" + input_path.suffix))
+            # Generate output file with '' suffix.
+            output_file = str(Path(output_folder) / (input_path.stem + "" + input_path.suffix))
             # Update the UI fields for each conversion (if desired)
             self.input_file_var.set(input_file)
             self.output_file_var.set(output_file)
