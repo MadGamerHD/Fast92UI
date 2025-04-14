@@ -1,42 +1,68 @@
-### **Fastman92 Processor GUI Tool**  
-
-The **Fastman92 Processor GUI** is a user-friendly graphical interface designed to simplify the use of the **Fastman92 Processor** tool. This tool allows users to **convert game files** between different formats (such as `.ipl` and `.ide`), **change input/output types** (binary or text), and **adjust file settings** for various **GTA game versions**, including **GTA IV, GTA SA, and GTA VC**.  
-
-By offering a structured GUI, users can easily select files, configure settings, and execute conversions **without using the command line**.  
+**FAST92 GUI** is a desktop application designed to provide a user-friendly graphical interface for the Fastman92 Processor. It streamlines the process of converting files by wrapping a command-line tool into an intuitive, multi-tabbed GUI built with Python’s `tkinter` framework. Below is an in-depth description of its functionality and key features:
 
 ---
 
-### **Features and Functionalities**  
+### Overview
 
-#### **1. Intuitive GUI Structure**  
-The interface is divided into multiple sections for ease of use:  
-- **File Selection:** Browse and select input/output files.  
-- **Conversion Options:** Choose file types, input/output formats, and target GTA versions.  
-- **Advanced Settings:** Configure additional options like string lists, position adjustments, and extra arguments.  
-- **Execution Log:** View logs of executed commands and results.  
+The tool is intended for processing game-related files, offering both single file conversions and batch conversion capabilities. Whether you’re working on one file or a whole directory, FAST92 GUI simplifies the task through its clean design, real-time progress updates, and detailed logging.
 
-#### **2. Core Functionalities**  
-- **File Handling:**  
-  - Users can select files via the `filedialog` module.  
-  - Input/output file paths are validated before execution.  
-- **Conversion Settings:**  
-  - Supports multiple file types (`.ipl`, `.ide`).  
-  - Input/output formats (`binary`, `text`) can be chosen from dropdowns.  
-  - Game versions can be set for compatibility.  
-- **Command Execution:**  
-  - A command string is built dynamically for `fastman92_processor.exe`.  
-  - The command is executed using `subprocess.run()`.  
-  - Execution logs are displayed in real-time within a text box.  
+---
 
-#### **3. Enhanced Performance and Usability**  
-- **Asynchronous Processing:**  
-  - Conversions run in a background thread, keeping the GUI responsive during long tasks.  
-- **Improved File Handling:**  
-  - Uses the `pathlib` module for cleaner and more reliable file path management.  
-- **Optimized Command Handling:**  
-  - Command building is modular, making it easier to maintain and extend.  
-- **Robust Error Handling:**  
-  - Input validation ensures required fields are set before execution.  
-  - Errors (e.g., incorrect move position format) trigger warnings via `messagebox.showerror()`.  
+### Key Features
 
-This update enhances the tool’s efficiency, maintainability, and ease of use, making **Fastman92 Processor GUI** an essential asset for GTA modders.  
+1. **Tabbed Interface**  
+   The application organizes its functionalities into two primary tabs:
+   - **Single Conversion:**  
+     - Allows users to select an input file, automatically suggests an appropriate output file based on the selected file type, and applies conversion settings.
+     - Provides options to include a string list file and advanced conversion parameters.
+   
+   - **Batch Conversion:**  
+     - Users can select multiple files at once and specify an output folder.
+     - Applies conversion settings uniformly across all files in the batch.
+     - Displays a consolidated progress bar and log for all conversions.
+
+2. **Dynamic Command Building**  
+   - Based on user inputs, the application constructs a command-line argument list tailored for the Fastman92 Processor.
+   - It includes parameters for file type, input/output types, game mode options, and advanced settings such as move position and additional arguments.
+   - This dynamic construction ensures flexibility and adaptability for different file conversion requirements.
+
+3. **Progress Monitoring and Logging**  
+   - Integrated progress bars (separate for single and batch operations) provide visual feedback on conversion progress. Progress increments are simulated in stages, offering a sense of progress even when the exact status isn’t available from the underlying process.
+   - A log output window captures all messages, including executed command lines, process output, and error messages. This logging is implemented via a thread-safe queue to ensure smooth updates without interfering with the GUI responsiveness.
+
+4. **Multithreading Support**  
+   - To keep the interface responsive during potentially long-running conversion processes, each conversion (or batch of conversions) runs in a separate thread.
+   - Threading is combined with a message queue system to safely relay progress updates and log messages from background threads back to the main GUI thread.
+
+5. **File and Folder Selection**  
+   - Users can easily browse for input files, output files, and optional string list files using standard file dialogs.
+   - Batch conversion features include selection of multiple files and an output folder where all processed files will be saved.
+
+6. **Advanced Options**  
+   - The GUI provides fields for entering advanced parameters such as:
+     - **Move Position (X Y Z):** Specify spatial coordinates if the conversion process requires position data.
+     - **Additional Arguments:** Append any extra command-line parameters that the user might need for specialized processing scenarios.
+
+---
+
+### How It Works
+
+1. **User Input and Validation:**  
+   - The user selects files and sets conversion options through the interface.
+   - The application validates the inputs (e.g., ensuring that a valid input and output file are specified and that optional move position values consist of three numbers).
+
+2. **Command Construction:**  
+   - With validated inputs, the tool builds a command list that mirrors the configuration settings.
+   - This command is tailored for the Fastman92 Processor, specifying details like file types and game-specific parameters.
+
+3. **Execution in a Separate Thread:**  
+   - The tool spawns a background thread to execute the constructed command with Python's `subprocess.Popen`.
+   - During execution, the thread continuously polls for progress and relays real-time updates and log messages back to the user interface.
+
+4. **Handling Errors and Completion:**  
+   - The tool monitors for errors during the conversion process. In case of any issues (like incorrect move position format or process errors), error messages are displayed immediately.
+   - Upon successful conversion, a confirmation is shown along with the generated output file path.
+
+---
+
+**FAST92 GUI** thus combines user interface simplicity with robust processing capabilities, making it a practical solution for users who need to manage file conversions for game assets or similar file types without diving into command-line syntax.
