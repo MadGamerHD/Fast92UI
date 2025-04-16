@@ -6,6 +6,9 @@
 
 The tool is intended for processing game-related files, offering both single file conversions and batch conversion capabilities. Whether you’re working on one file or a whole directory, FAST92 GUI simplifies the task through its clean design, real-time progress updates, and detailed logging.
 
+![Screenshot 2025-04-16 143833](https://github.com/user-attachments/assets/960300f3-125b-4ddd-864f-10bf50c5e618)
+
+![Screenshot 2025-04-16 143914](https://github.com/user-attachments/assets/0a1a2e64-81d2-4af4-8131-be5e66c49162)
 ---
 
 ### Key Features
